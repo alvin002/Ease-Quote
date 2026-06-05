@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Safe Apparels Quote Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Roboto', 'Arial', sans-serif;
+        }
+
+        body {
+            background: #f0f2f5;
+            padding: 20px;
+        }
+
+        .app-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Navigation */
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            background: white;
+            padding: 10px 20px;
+            border-radius: 50px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            flex-wrap: wrap;
+        }
+
+        .nav-tab {
+            padding: 10px 20px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-weight: 600;
+            border-radius: 40px;
+            transition: all 0.3s;
+            color: #555;
+        }
+
+        .nav-tab.active {
+            background: #1e1e1e;
+            color: #F5B041;
+        }
+
+        .view {
+            display: none;
+        }
+
+        .view.active-view {
+            display: block;
+        }
+
+        /* QUOTE TEMPLATE - EXACT MATCH TO YOUR FORMAT */
+        .quote-template {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        /* Header Section */
+        .template-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #1e1e1e;
+        }
+
+        .company-name {
+            font-size: 28px;
+            font-weight: 800;
+            color: #1e1e1e;
+            letter-spacing: 2px;
+        }
+
+        .company-tagline {
+            font-size: 12px;
+            color: #F5B041;
+            margin-top: 5px;
+            font-weight: 600;
+        }
+
+        .company-details {
+            font-size: 11px;
+            color: #666;
+            margin-top: 10px;
+        }
+
+        /* TO and DATE Section */
+        .to-date-section {
+            margin-bottom: 30px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-left: 4px solid #F5B041;
+        }
+
+        .to-line, .date-line {
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .to-line strong, .date-line strong {
+            width: 80px;
+            display: inline-block;
+        }
+
+        .to-input, .date-input {
+            border: none;
+            background: transparent;
+            border-bottom: 1px dashed #999;
+            min-width: 250px;
+            padding: 4px 8px;
+            font-size: 14px;
+        }
+
+        .to-input:focus, .date-input:focus {
+            outline: none;
+            border-bottom-color: #F5B041;
+        }
+
+        /* Quote Text */
+        .quote-text {
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #333;
+            font-style: italic;
+        }
+
+        /* ITEMS TABLE - EXACT MATCH TO YOUR TEMPLATE */
+        .quote-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 13px;
+        }
+
+        .quote-table th {
+            border: 1px solid #1e1e1e;
+            padding: 12px 8px;
+            background: #1e1e1e;
+            color: white;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .quote-table td {
+            border: 1px solid #ddd;
+            padding: 10px 8px;
+            vertical-align: top;
+        }
+
+        .item-cell {
+            min-width: 200px;
+        }
+
+        .item-input, .desc-input, .qty-input, .price-input {
+            width: 100%;
+            border: none;
+            padding: 5px;
+            background: transparent;
+        }
+
+        .item-input:focus, .desc-input:focus, .qty-input:focus, .price-input:focus {
+            outline: none;
+            background: #fff8e7;
+        }
+
+        .table-total, .table-vat, .table-inc {
+            font-weight: 500;
+        }
+
+        /* Add Row Button */
+        .add-row-btn {
+            background: #F5B04120;
+            border: 2px dashed #F5B041;
+            padding: 10px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            margin: 15px 0;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Totals Section */
+        .totals-section {
+            text-align: right;
+            margin: 20px 0;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 8px;
+        }
+
+        .totals-line {
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .grand-total-line {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1e1e1e;
+            border-top: 2px solid #ddd;
+            padding-top: 10px;
+            margin-top: 10px;
+        }
+
+        /* Footer Signature */
+        .footer-signature {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+        }
+
+        .signature-line {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            font-size: 12px;
+        }
+
+        .tagline {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #F5B041;
+            font-style: italic;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 10px 24px;
+            border-radius: 40px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+
+        .btn-primary { background: #1e1e1e; color: white; }
+        .btn-yellow { background: #F5B041; color: #1e1e1e; }
+        .btn-outline { border: 1px solid #ddd; background: white; }
+        .btn-danger { background: #dc3545; color: white; }
+
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+
+        /* Dashboard and other views */
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border-left: 4px solid #F5B041;
+        }
+
+        .stat-card h4 { font-size: 0.8rem; color: #666; }
+        .stat-card .number { font-size: 1.8rem; font-weight: 800; color: #1e1e1e; }
+
+        .data-table {
+            width: 100%;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+
+        .data-table th {
+            background: #1e1e1e;
+            color: white;
+            padding: 12px;
+        }
+
+        .data-table td {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        @media print {
+            .nav-tabs, .action-buttons, .add-row-btn, .btn, .remove-row-btn {
+                display: none !important;
+            }
+            .quote-template {
+                padding: 20px;
+                box-shadow: none;
+            }
+            .item-input, .desc-input, .qty-input, .price-input {
+                border: none !important;
+                padding: 0 !important;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .quote-template { padding: 20px; }
+            .quote-table { font-size: 11px; }
+            .action-buttons { flex-direction: column; }
+            .btn { justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+<div class="app-container">
+    <!-- Navigation -->
+    <div class="nav-tabs">
+        <button class="nav-tab active" onclick="switchView('quote')"><i class="fas fa-file-invoice"></i> Quote Generator</button>
+        <button class="nav-tab" onclick="switchView('dashboard')"><i class="fas fa-chart-line"></i> Dashboard</button>
+        <button class="nav-tab" onclick="switchView('history')"><i class="fas fa-history"></i> Quote History</button>
+    </div>
+
+    <!-- Quote Generator View - EXACT TEMPLATE MATCH -->
+    <div id="quoteView" class="view active-view">
+        <div class="quote-template" id="quoteTemplate">
+            <!-- Header -->
+            <div class="template-header">
+                
+                
+                <div class="company-name">SAFE APPARELS</div>
+                <div class="company-tagline">Uniforms, Safety Wear & PPE Specialists</div>
+                <div class="company-details">
+                    📞 +254 796 081 493 | ✉ sales.safeapparels@saraiafrique.com | 🌐 www.safeapparels.com<br>
+                    🏢 Abacus House, Ground Floor Wing A ,Babadogo Rd, Nairobi.
+, Kenya
+                </div>
+            </div>
+
+            <!-- TO and DATE -->
+            <div class="to-date-section">
+                <div class="to-line">
+                    <strong>TO:</strong> 
+                    <input type="text" id="toField" class="to-input" placeholder="Customer name / Company name" style="width: 70%;">
+                </div>
+                <div class="date-line">
+                    <strong>DATE:</strong> 
+                    <input type="date" id="dateField" class="date-input" style="width: 200px;">
+                </div>
+            </div>
+
+            <!-- Quote Text -->
+            <div class="quote-text">
+                <em>Please find below our quote for requested items:</em>
+            </div>
+
+            <!-- Items Table - EXACT MATCH to your template -->
+            <table class="quote-table">
+                <thead>
+                    <tr>
+                        <th style="width: 35%">ITEM</th>
+                        <th style="width: 10%">QTY</th>
+                        <th style="width: 15%">PRICE (KES)</th>
+                        <th style="width: 15%">TOTAL</th>
+                        <th style="width: 12%">VAT (16%)</th>
+                        <th style="width: 13%">TOTAL VAT INCLUSIVE</th>
+                        <th style="width: 5%"></th>
+                    </tr>
+                </thead>
+                <tbody id="quoteTableBody">
+                    <!-- Dynamic rows will appear here -->
+                </tbody>
+            </table>
+
+            <button class="add-row-btn" onclick="addQuoteRow()">
+                <i class="fas fa-plus-circle"></i> Add Item
+            </button>
+
+            <!-- Totals Section -->
+            <div class="totals-section">
+                <div class="totals-line">
+                    <strong>Subtotal:</strong> KES <span id="subtotalDisplay">0.00</span>
+                </div>
+                <div class="totals-line">
+                    <strong>VAT (16%):</strong> KES <span id="vatDisplay">0.00</span>
+                </div>
+                <div class="totals-line grand-total-line">
+                    <strong>GRAND TOTAL (VAT Inclusive):</strong> KES <span id="grandTotalDisplay">0.00</span>
+                </div>
+            </div>
+
+            <!-- Footer Signature and Tagline -->
+            <div class="footer-signature">
+               <div class="Prepared-by">
+                    <strong>Prepared By:</strong> 
+                    <input type="text" id="toField" class="to-input" placeholder="" style="width: 40%;">
+                </div>
+            </div>
+
+            <div class="tagline">
+                <i class="fas fa-hard-hat"></i> "Stitched With Purpose. Built for Safety. Styled for Impact." <i class="fas fa-shield-alt"></i>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <button class="btn btn-primary" onclick="saveQuoteToHistory()"><i class="fas fa-save"></i> Save Quote</button>
+            <button class="btn btn-primary" onclick="downloadQuoteAsPDF()"><i class="fas fa-file-pdf"></i> Download PDF</button>
+            <button class="btn btn-primary" onclick="printQuote()"><i class="fas fa-print"></i> Print Quote</button>
+            <button class="btn btn-yellow" onclick="shareWhatsApp()"><i class="fab fa-whatsapp"></i> Share via WhatsApp</button>
+            <button class="btn btn-yellow" onclick="shareEmail()"><i class="fas fa-envelope"></i> Share via Email</button>
+            <button class="btn btn-outline" onclick="clearQuoteForm()"><i class="fas fa-trash"></i> Clear Form</button>
+        </div>
+    </div>
+
+    <!-- Dashboard View -->
+    <div id="dashboardView" class="view">
+        <div class="dashboard-stats">
+            <div class="stat-card"><h4>📄 Total Quotes</h4><div class="number" id="totalQuotes">0</div></div>
+            <div class="stat-card"><h4>✅ Approved</h4><div class="number" id="approvedQuotes">0</div></div>
+            <div class="stat-card"><h4>💰 Total Revenue (KES)</h4><div class="number" id="totalRevenue">0</div></div>
+            <div class="stat-card"><h4>⭐ Most Requested</h4><div class="number" id="mostRequested">-</div></div>
+        </div>
+        <div class="quote-template">
+            <h3 style="margin-bottom: 20px;"><i class="fas fa-chart-line"></i> Recent Quotes</h3>
+            <table class="data-table" id="dashboardQuotesTable">
+                <thead><tr><th>Quote #</th><th>Customer</th><th>Date</th><th>Total</th></tr></thead>
+                <tbody id="dashboardQuotesBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Quote History View -->
+    <div id="historyView" class="view">
+        <div class="quote-template">
+            <h3 style="margin-bottom: 20px;"><i class="fas fa-history"></i> Quote History</h3>
+            <button class="btn btn-primary" onclick="exportAllQuotes()" style="margin-bottom: 20px;"><i class="fas fa-download"></i> Export All Quotes (JSON)</button>
+            <table class="data-table" id="historyTable">
+                <thead><tr><th>Quote #</th><th>Customer</th><th>Date</th><th>Total (KES)</th><th>Actions</th></tr></thead>
+                <tbody id="historyTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Data Storage
+    let quotes = JSON.parse(localStorage.getItem('safeapparel_quotes_v2') || '[]');
+    let quoteCounter = parseInt(localStorage.getItem('quoteCounter_v2') || '1000');
+
+    // Product suggestions
+    const productSuggestions = [
+        "Reflective Jacket", "Safety Boots", "Helmet", "Gloves", "Goggles",
+        "Overalls", "Dust Coat", "Ear Muffs", "Harness", "Safety Sign",
+        "Corporate Uniform", "Branded Workwear", "Promotional Merchandise"
+    ];
+
+    function saveData() {
+        localStorage.setItem('safeapparel_quotes_v2', JSON.stringify(quotes));
+        localStorage.setItem('quoteCounter_v2', quoteCounter);
+    }
+
+    function generateQuoteNumber() {
+        const date = new Date();
+        const yy = date.getFullYear().toString().slice(-2);
+        const mm = (date.getMonth() + 1).toString().padStart(2, '0');
+        const seq = (quoteCounter++).toString().padStart(4, '0');
+        saveData();
+        return `SAQ/${yy}${mm}/${seq}`;
+    }
+
+    function addQuoteRow(itemName = '', qty = 1, price = 0) {
+        const tbody = document.getElementById('quoteTableBody');
+        const row = document.createElement('tr');
+        
+        // Create datalist for autocomplete
+        const datalistId = `productList_${Date.now()}_${Math.random()}`;
+        
+        row.innerHTML = `
+            <td class="item-cell">
+                <input list="${datalistId}" class="item-input" value="${itemName}" placeholder="Enter product name" style="width: 100%;">
+                <datalist id="${datalistId}">
+                    ${productSuggestions.map(p => `<option value="${p}">`).join('')}
+                </datalist>
+            </td>
+            <td><input type="number" class="qty-input" value="${qty}" min="1" step="1" style="width: 80px;"></td>
+            <td><input type="number" class="price-input" value="${price}" min="0" step="100" style="width: 100px;"></td>
+            <td class="table-total">0.00</td>
+            <td class="table-vat">0.00</td>
+            <td class="table-inc">0.00</td>
+            <td><button class="remove-row-btn" onclick="this.closest('tr').remove(); calculateTotals();" style="background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;"><i class="fas fa-trash"></i></button></td>
+        `;
+        
+        const qtyInput = row.querySelector('.qty-input');
+        const priceInput = row.querySelector('.price-input');
+        qtyInput.addEventListener('input', () => calculateTotals());
+        priceInput.addEventListener('input', () => calculateTotals());
+        
+        tbody.appendChild(row);
+        calculateTotals();
+    }
+
+    function calculateTotals() {
+        let subtotal = 0;
+        const rows = document.querySelectorAll('#quoteTableBody tr');
+        
+        rows.forEach(row => {
+            const qty = parseFloat(row.querySelector('.qty-input')?.value) || 0;
+            const price = parseFloat(row.querySelector('.price-input')?.value) || 0;
+            const total = qty * price;
+            const vat = total * 0.16;
+            const totalInc = total + vat;
+            
+            if (row.querySelector('.table-total')) row.querySelector('.table-total').innerText = total.toFixed(2);
+            if (row.querySelector('.table-vat')) row.querySelector('.table-vat').innerText = vat.toFixed(2);
+            if (row.querySelector('.table-inc')) row.querySelector('.table-inc').innerText = totalInc.toFixed(2);
+            
+            subtotal += total;
+        });
+        
+        const vatTotal = subtotal * 0.16;
+        const grandTotal = subtotal + vatTotal;
+        
+        document.getElementById('subtotalDisplay').innerText = subtotal.toFixed(2);
+        document.getElementById('vatDisplay').innerText = vatTotal.toFixed(2);
+        document.getElementById('grandTotalDisplay').innerText = grandTotal.toFixed(2);
+    }
+
+    function getCurrentQuote() {
+        const items = [];
+        document.querySelectorAll('#quoteTableBody tr').forEach(row => {
+            items.push({
+                item: row.querySelector('.item-input')?.value || '',
+                quantity: parseFloat(row.querySelector('.qty-input')?.value) || 0,
+                price: parseFloat(row.querySelector('.price-input')?.value) || 0,
+                total: parseFloat(row.querySelector('.table-total')?.innerText) || 0
+            });
+        });
+        
+        return {
+            number: generateQuoteNumber(),
+            customer: document.getElementById('toField').value,
+            date: document.getElementById('dateField').value || new Date().toISOString().slice(0,10),
+            items: items,
+            subtotal: parseFloat(document.getElementById('subtotalDisplay').innerText),
+            vat: parseFloat(document.getElementById('vatDisplay').innerText),
+            grandTotal: parseFloat(document.getElementById('grandTotalDisplay').innerText),
+            createdAt: new Date().toISOString()
+        };
+    }
+
+    function saveQuoteToHistory() {
+        const quote = getCurrentQuote();
+        if (quote.items.length === 0) {
+            alert('Please add at least one item to the quote.');
+            return;
+        }
+        
+        quotes.unshift(quote);
+        saveData();
+        alert(`Quote ${quote.number} saved successfully!`);
+        updateDashboard();
+        loadHistory();
+    }
+
+    function downloadQuoteAsPDF() {
+        // Ensure date is set
+        if (!document.getElementById('dateField').value) {
+            document.getElementById('dateField').value = new Date().toISOString().slice(0,10);
+        }
+        
+        const element = document.getElementById('quoteTemplate');
+        const quoteNum = generateQuoteNumber();
+        
+        // Add quote number temporarily for PDF
+        const quoteNumDiv = document.createElement('div');
+        quoteNumDiv.style.textAlign = 'right';
+        quoteNumDiv.style.fontSize = '12px';
+        quoteNumDiv.style.marginBottom = '10px';
+        quoteNumDiv.style.color = '#666';
+        quoteNumDiv.innerHTML = `<strong>Quote #:</strong> ${quoteNum}`;
+        element.insertBefore(quoteNumDiv, element.firstChild);
+        
+        const opt = {
+            margin: [0.5, 0.5, 0.5, 0.5],
+            filename: `QUOTE_${quoteNum}_${document.getElementById('toField').value || 'Customer'}.pdf`,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, letterRendering: true },
+            jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+        };
+        
+        html2pdf().set(opt).from(element).save().then(() => {
+            quoteNumDiv.remove();
+        });
+    }
+
+    function printQuote() {
+        const originalTitle = document.title;
+        document.title = `Quote_${document.getElementById('toField').value || 'Customer'}`;
+        window.print();
+        document.title = originalTitle;
+    }
+
+    function shareWhatsApp() {
+        const customer = document.getElementById('toField').value || 'Customer';
+        const total = document.getElementById('grandTotalDisplay').innerText;
+        const text = `Hello ${customer},\n\nPlease find attached our quotation from SAFE APPARELS.\nTotal Amount: KES ${total}\n\nThank you for your interest in our safety apparel products.\n\n"Stitched With Purpose. Built for Safety. Styled for Impact."`;
+        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+    }
+
+    function shareEmail() {
+        const customer = document.getElementById('toField').value || 'Customer';
+        const total = document.getElementById('grandTotalDisplay').innerText;
+        const subject = `Quotation from SAFE APPARELS - ${customer}`;
+        const body = `Dear ${customer},\n\nPlease find attached our quotation for safety apparel and PPE.\n\nTotal Amount: KES ${total}\n\nFor any questions, please contact us at sales@safeapparels.com or +254 700 123 456.\n\nBest regards,\nSAFE APPARELS Team\n"Stitched With Purpose. Built for Safety. Styled for Impact."`;
+        window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    }
+
+    function clearQuoteForm() {
+        document.getElementById('toField').value = '';
+        document.getElementById('dateField').value = new Date().toISOString().slice(0,10);
+        document.getElementById('quoteTableBody').innerHTML = '';
+        addQuoteRow();
+        calculateTotals();
+    }
+
+    function updateDashboard() {
+        document.getElementById('totalQuotes').innerText = quotes.length;
+        const approved = quotes.filter(q => q.grandTotal > 0).length;
+        document.getElementById('approvedQuotes').innerText = approved;
+        const totalRevenue = quotes.reduce((sum, q) => sum + (q.grandTotal || 0), 0);
+        document.getElementById('totalRevenue').innerText = totalRevenue.toFixed(2);
+        
+        // Most requested product
+        const productCount = {};
+        quotes.forEach(quote => {
+            quote.items.forEach(item => {
+                if (item.item) {
+                    productCount[item.item] = (productCount[item.item] || 0) + item.quantity;
+                }
+            });
+        });
+        let mostRequested = Object.keys(productCount).length > 0 ? 
+            Object.keys(productCount).reduce((a,b) => productCount[a] > productCount[b] ? a : b, 'None') : 'None';
+        document.getElementById('mostRequested').innerText = mostRequested;
+        
+        // Recent quotes in dashboard
+        const tbody = document.getElementById('dashboardQuotesBody');
+        tbody.innerHTML = '';
+        quotes.slice(0, 10).forEach(quote => {
+            const row = tbody.insertRow();
+            row.innerHTML = `
+                <td>${quote.number}</td>
+                <td>${quote.customer || 'N/A'}</td>
+                <td>${quote.date}</td>
+                <td>KES ${quote.grandTotal?.toFixed(2)}</td>
+            `;
+        });
+    }
+
+    function loadHistory() {
+        const tbody = document.getElementById('historyTableBody');
+        tbody.innerHTML = '';
+        quotes.forEach((quote, idx) => {
+            const row = tbody.insertRow();
+            row.innerHTML = `
+                <td>${quote.number}</td>
+                <td>${quote.customer || 'N/A'}</td>
+                <td>${quote.date}</td>
+                <td>KES ${quote.grandTotal?.toFixed(2)}</td>
+                <td><button class="btn btn-outline" onclick="loadQuoteToEditor(${idx})" style="padding: 5px 15px;">Load</button></td>
+            `;
+        });
+    }
+
+    function loadQuoteToEditor(idx) {
+        const quote = quotes[idx];
+        document.getElementById('toField').value = quote.customer;
+        document.getElementById('dateField').value = quote.date;
+        
+        const tbody = document.getElementById('quoteTableBody');
+        tbody.innerHTML = '';
+        
+        quote.items.forEach(item => {
+            addQuoteRow(item.item, item.quantity, item.price);
+        });
+        
+        calculateTotals();
+        switchView('quote');
+        alert(`Loaded quote ${quote.number}`);
+    }
+
+    function exportAllQuotes() {
+        const dataStr = JSON.stringify(quotes, null, 2);
+        const blob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `safeapparels_quotes_${new Date().toISOString().slice(0,10)}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    function switchView(view) {
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active-view'));
+        document.getElementById(`${view}View`).classList.add('active-view');
+        document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+        event.target.classList.add('active');
+        
+        if (view === 'dashboard') updateDashboard();
+        if (view === 'history') loadHistory();
+    }
+
+    // Initialize
+    window.onload = () => {
+        document.getElementById('dateField').value = new Date().toISOString().slice(0,10);
+        addQuoteRow('Reflective Jacket', 5, 2500);
+        addQuoteRow('Safety Boots', 3, 4500);
+        calculateTotals();
+        updateDashboard();
+        loadHistory();
+    };
+</script>
+</body>
+</html>
